@@ -7,7 +7,7 @@ license = "MIT/Apache-2.0"
 repository = "https://github.com/asmarques/mrtd"
 readme = "README.md"
 keywords = ["mrtd", "icao", "mrz", "passport", "travel"]
-categories = ["parser-implementation", "encoding"]
+categories = ["parser-implementations", "encoding"]
 
 [dependencies]
 failure = "0.1.1"
