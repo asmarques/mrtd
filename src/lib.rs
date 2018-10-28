@@ -3,13 +3,13 @@
 
 extern crate chrono;
 extern crate failure;
-#[macro_use]
 extern crate failure_derive;
-#[macro_use]
 extern crate lazy_static;
 extern crate regex;
 
 use chrono::NaiveDate;
+use failure_derive::Fail;
+use lazy_static::lazy_static;
 use regex::Regex;
 use std::str;
 
