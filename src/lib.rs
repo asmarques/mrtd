@@ -41,21 +41,21 @@ pub enum Gender {
 #[derive(Debug)]
 pub struct Passport {
     /// country (ISO 3166-1 code)
-    country: String,
+    pub country: String,
     /// surname
-    surname: String,
+    pub surname: String,
     /// given names,
-    given_names: Vec<String>,
+    pub given_names: Vec<String>,
     /// passport number
-    passport_number: String,
+    pub passport_number: String,
     /// nationality (ISO 3166-1 code)
-    nationality: String,
+    pub nationality: String,
     /// birth date
-    birth_date: chrono::NaiveDate,
+    pub birth_date: chrono::NaiveDate,
     /// gender
-    gender: Gender,
+    pub gender: Gender,
     /// expiry date
-    expiry_date: chrono::NaiveDate,
+    pub expiry_date: chrono::NaiveDate,
 }
 
 lazy_static! {
