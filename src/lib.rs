@@ -76,7 +76,7 @@ pub fn parse(data: &str) -> Result<Document, Error> {
         return Err(Error::InvalidDocumentType);
     }
 
-    let country = String::from(str::from_utf8(&mrz[2..5]).unwrap());
+    let country = String::from(str::from_utf8(&mrz[2..5]).unwrap().replace("<", ""));
     let names = str::from_utf8(&mrz[5..43])
         .unwrap()
         .split("<")
@@ -88,8 +88,8 @@ pub fn parse(data: &str) -> Result<Document, Error> {
         .map(|name| String::from(*name))
         .collect::<Vec<_>>();
 
-    let passport_number = String::from(str::from_utf8(&mrz[44..53]).unwrap());
-    let nationality = String::from(str::from_utf8(&mrz[54..57]).unwrap());
+    let passport_number = String::from(str::from_utf8(&mrz[44..53]).unwrap().replace("<", ""));
+    let nationality = String::from(str::from_utf8(&mrz[54..57]).unwrap().replace("<", ""));
     let birth_date =
         NaiveDate::parse_from_str(str::from_utf8(&mrz[57..63]).unwrap(), DATE_FORMAT).unwrap();
 
@@ -121,15 +121,15 @@ mod tests {
 
     #[test]
     fn parse_passport() {
-        let mrz = "P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<\
-                   L898902C36UTO7408122F1204159ZE184226B<<<<<10";
+        let mrz = "P<UT<ERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<\
+                   L898902C<6UT<7408122F1204159ZE184226B<<<<<10";
         match parse(mrz).unwrap() {
             Document::Passport(passport) => {
-                assert_eq!(passport.country, "UTO");
+                assert_eq!(passport.country, "UT");
                 assert_eq!(passport.surname, "ERIKSSON");
                 assert_eq!(passport.given_names, vec!["ANNA", "MARIA"]);
-                assert_eq!(passport.passport_number, "L898902C3");
-                assert_eq!(passport.nationality, "UTO");
+                assert_eq!(passport.passport_number, "L898902C");
+                assert_eq!(passport.nationality, "UT");
                 assert_eq!(passport.birth_date.year(), 1974);
                 assert_eq!(passport.birth_date.month(), 08);
                 assert_eq!(passport.birth_date.day(), 12);
