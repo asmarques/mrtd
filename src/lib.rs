@@ -23,14 +23,14 @@ pub enum Error {
 }
 
 /// Travel document
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum Document {
     /// Passport
     Passport(Passport),
 }
 
 /// Gender
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Gender {
     Male,
     Female,
@@ -38,7 +38,7 @@ pub enum Gender {
 }
 
 /// Passport
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Passport {
     /// country (ISO 3166-1 code)
     pub country: String,
