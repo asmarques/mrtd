@@ -5,6 +5,8 @@ use std::fmt;
 pub enum Error {
     InvalidDocumentType,
     InvalidFormat,
+    InvalidBirthDate,
+    InvalidExpiryDate,
 }
 
 impl fmt::Display for Error {
@@ -13,6 +15,8 @@ impl fmt::Display for Error {
         let message = match self {
             InvalidDocumentType => "invalid document type",
             InvalidFormat => "invalid MRZ",
+            InvalidBirthDate => "invalid birth date",
+            InvalidExpiryDate => "invalid expiry date",
         };
         write!(f, "{}", message)
     }

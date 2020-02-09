@@ -37,8 +37,8 @@ pub fn parse(data: &str) -> Result<Document, Error> {
 
     let passport_number = String::from(str::from_utf8(&mrz[44..53]).unwrap().replace("<", ""));
     let nationality = String::from(str::from_utf8(&mrz[54..57]).unwrap().replace("<", ""));
-    let birth_date =
-        NaiveDate::parse_from_str(str::from_utf8(&mrz[57..63]).unwrap(), DATE_FORMAT).unwrap();
+    let birth_date = NaiveDate::parse_from_str(str::from_utf8(&mrz[57..63]).unwrap(), DATE_FORMAT)
+        .map_err(|_| Error::InvalidBirthDate)?;
 
     let gender = match mrz[64] {
         b'M' => Gender::Male,
@@ -46,8 +46,8 @@ pub fn parse(data: &str) -> Result<Document, Error> {
         _ => Gender::Undefined,
     };
 
-    let expiry_date =
-        NaiveDate::parse_from_str(str::from_utf8(&mrz[65..71]).unwrap(), DATE_FORMAT).unwrap();
+    let expiry_date = NaiveDate::parse_from_str(str::from_utf8(&mrz[65..71]).unwrap(), DATE_FORMAT)
+        .map_err(|_| Error::InvalidExpiryDate)?;
 
     return Ok(Document::Passport(Passport {
         country,
@@ -122,5 +122,21 @@ mod tests {
                    L898902C36UTO7408122F1204159ZE184226B<<<<<10";
         let error = parse(mrz).unwrap_err();
         assert_eq!(error, Error::InvalidDocumentType);
+    }
+
+    #[test]
+    fn parse_passport_invalid_birth_date() {
+        let mrz = "P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<\
+                   L898902C36UTO7A08122F1204159ZE184226B<<<<<10";
+        let error = parse(mrz).unwrap_err();
+        assert_eq!(error, Error::InvalidBirthDate);
+    }
+
+    #[test]
+    fn parse_passport_invalid_expiry_date() {
+        let mrz = "P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<\
+                   L898902C36UTO7408122F1<0A159ZE184226B<<<<<10";
+        let error = parse(mrz).unwrap_err();
+        assert_eq!(error, Error::InvalidExpiryDate);
     }
 }
