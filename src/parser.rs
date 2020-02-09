@@ -1,6 +1,6 @@
 use crate::document::*;
 use crate::error::Error;
-use chrono::NaiveDate;
+use chrono::prelude::*;
 use lazy_static::lazy_static;
 use regex::Regex;
 use std::str;
@@ -63,8 +63,7 @@ pub fn parse(data: &str) -> Result<Document, Error> {
 
 #[cfg(test)]
 mod tests {
-    use chrono::prelude::*;
-    use *;
+    use super::*;
 
     #[test]
     fn parse_passport_with_fillers() {
