@@ -10,8 +10,6 @@ keywords = ["mrtd", "icao", "mrz", "passport", "travel"]
 categories = ["parser-implementations", "encoding"]
 
 [dependencies]
-failure = "0.1.1"
-failure_derive = "0.1.1"
 chrono = "0.4"
 regex = "1"
 lazy_static = "1.1"

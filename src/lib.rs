@@ -2,25 +2,16 @@
 //! as defined by ICAO Document 9303.
 
 extern crate chrono;
-extern crate failure;
-extern crate failure_derive;
 extern crate lazy_static;
 extern crate regex;
 
 use chrono::NaiveDate;
-use failure_derive::Fail;
 use lazy_static::lazy_static;
 use regex::Regex;
 use std::str;
 
-/// Parsing error
-#[derive(Debug, Fail, PartialEq, Eq)]
-pub enum Error {
-    #[fail(display = "invalid document type")]
-    InvalidDocumentType,
-    #[fail(display = "invalid MRZ")]
-    InvalidFormat,
-}
+mod error;
+pub use error::Error;
 
 /// Travel document
 #[derive(Debug, PartialEq, Clone)]
