@@ -43,7 +43,7 @@ pub fn parse(data: &str) -> Result<Document, Error> {
     let gender = match mrz[64] {
         b'M' => Gender::Male,
         b'F' => Gender::Female,
-        _ => Gender::Undefined,
+        _ => Gender::Other,
     };
 
     let expiry_date = NaiveDate::parse_from_str(str::from_utf8(&mrz[65..71]).unwrap(), DATE_FORMAT)

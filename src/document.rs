@@ -10,28 +10,31 @@ pub enum Document {
 /// Gender
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Gender {
+    /// Male
     Male,
+    /// Female
     Female,
-    Undefined,
+    /// Other/unspecified
+    Other,
 }
 
 /// Passport
 #[derive(Debug, PartialEq, Clone)]
 pub struct Passport {
-    /// country (ISO 3166-1 code)
+    /// Country (ISO 3166-1 code)
     pub country: String,
-    /// surname
+    /// Surname
     pub surname: String,
-    /// given names,
+    /// Given names
     pub given_names: Vec<String>,
-    /// passport number
+    /// Passport number
     pub passport_number: String,
-    /// nationality (ISO 3166-1 code)
+    /// Nationality (ISO 3166-1 code)
     pub nationality: String,
-    /// birth date
+    /// Date of birth
     pub birth_date: NaiveDate,
-    /// gender
+    /// Gender
     pub gender: Gender,
-    /// expiry date
+    /// Date of expiry
     pub expiry_date: NaiveDate,
 }
