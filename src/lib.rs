@@ -120,16 +120,31 @@ mod tests {
     use *;
 
     #[test]
-    fn parse_passport() {
-        let mrz = "P<UT<ERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<\
-                   L898902C<6UT<7408122F1204159ZE184226B<<<<<10";
+    fn parse_passport_with_fillers() {
+        let mrz = "P<UT<ERIKSSON<<<<<ANNA<<<MARIA<<<<<<<<<<<<<<\
+                   L898902<<6UT<7408122F1204159ZE184226B<<<<<10";
         match parse(mrz).unwrap() {
             Document::Passport(passport) => {
                 assert_eq!(passport.country, "UT");
                 assert_eq!(passport.surname, "ERIKSSON");
                 assert_eq!(passport.given_names, vec!["ANNA", "MARIA"]);
-                assert_eq!(passport.passport_number, "L898902C");
+                assert_eq!(passport.passport_number, "L898902");
                 assert_eq!(passport.nationality, "UT");
+            }
+        }
+    }
+
+    #[test]
+    fn parse_passport() {
+        let mrz = "P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<\
+                   L898902C36UTO7408122F1204159ZE184226B<<<<<10";
+        match parse(mrz).unwrap() {
+            Document::Passport(passport) => {
+                assert_eq!(passport.country, "UTO");
+                assert_eq!(passport.surname, "ERIKSSON");
+                assert_eq!(passport.given_names, vec!["ANNA", "MARIA"]);
+                assert_eq!(passport.passport_number, "L898902C3");
+                assert_eq!(passport.nationality, "UTO");
                 assert_eq!(passport.birth_date.year(), 1974);
                 assert_eq!(passport.birth_date.month(), 08);
                 assert_eq!(passport.birth_date.day(), 12);
