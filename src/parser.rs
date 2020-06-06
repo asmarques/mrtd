@@ -12,8 +12,7 @@ lazy_static! {
 const DATE_FORMAT: &str = "%y%m%d";
 
 /// Parse a Machine-readable Zone (MRZ) returning the corresponding travel document
-// check digit locations from https://www.icao.int/publications/Documents/9303_p4_cons_en.pdf
-// section 4.2.2
+// Field specification from https://www.icao.int/publications/Documents/9303_p4_cons_en.pdf
 pub fn parse(data: &str) -> Result<Document, Error> {
     if !VALID_MRZ.is_match(data) {
         return Err(Error::InvalidFormat);
@@ -25,22 +24,22 @@ pub fn parse(data: &str) -> Result<Document, Error> {
         return Err(Error::InvalidDocumentType);
     }
 
-    let country = String::from(str::from_utf8(&mrz[2..5]).unwrap().replace("<", ""));
+    let country = str::from_utf8(&mrz[2..5]).unwrap().replace("<", "");
     let names = str::from_utf8(&mrz[5..43])
         .unwrap()
-        .split("<")
+        .split('<')
         .collect::<Vec<_>>();
     let surname = String::from(*names.first().unwrap());
     let given_names = names[2..]
-        .into_iter()
+        .iter()
         .filter(|name| !name.is_empty())
         .map(|name| String::from(*name))
         .collect::<Vec<_>>();
 
-    let passport_number = String::from(str::from_utf8(&mrz[44..53]).unwrap().replace("<", ""));
+    let passport_number = str::from_utf8(&mrz[44..53]).unwrap().replace("<", "");
     verify_check_digit(&data[44..53], char_to_num(&data, 53)?)?;
 
-    let nationality = String::from(str::from_utf8(&mrz[54..57]).unwrap().replace("<", ""));
+    let nationality = str::from_utf8(&mrz[54..57]).unwrap().replace("<", "");
     let birth_date = NaiveDate::parse_from_str(str::from_utf8(&mrz[57..63]).unwrap(), DATE_FORMAT)
         .map_err(|_| Error::InvalidBirthDate)?;
 
@@ -61,7 +60,7 @@ pub fn parse(data: &str) -> Result<Document, Error> {
     let comp_check_digit_str = format!("{}{}{}", &data[44..54], &data[57..64], &data[65..87]);
     verify_check_digit(&comp_check_digit_str, char_to_num(&data, 87)?)?;
 
-    return Ok(Document::Passport(Passport {
+    Ok(Document::Passport(Passport {
         country,
         surname,
         given_names,
@@ -70,7 +69,7 @@ pub fn parse(data: &str) -> Result<Document, Error> {
         birth_date,
         gender,
         expiry_date,
-    }));
+    }))
 }
 
 fn char_to_num(full_str: &str, ind: usize) -> Result<u32, Error> {
@@ -83,16 +82,13 @@ fn char_to_num(full_str: &str, ind: usize) -> Result<u32, Error> {
     }
 }
 
-// check digit calculation from https://www.icao.int/publications/Documents/9303_p3_cons_en.pdf
-// section 4.9
+// Check digit calculation from https://www.icao.int/publications/Documents/9303_p3_cons_en.pdf (section 4.9)
 fn verify_check_digit(slice: &str, check_digit: u32) -> Result<(), Error> {
     let mut weighting_iter = [7, 3, 1].iter().cycle();
 
-    let mut next = || {
-        weighting_iter.next().expect("cycle iter stopped")
-    };
+    let mut next = || weighting_iter.next().expect("cycle iter stopped");
 
-    let mut char_weighting = |c: char| -> Result<u32, Error> {
+    let char_weighting = |c: char| -> Result<u32, Error> {
         let num = match c {
             '0' => 0,
             '1' => 1,
@@ -137,7 +133,12 @@ fn verify_check_digit(slice: &str, check_digit: u32) -> Result<(), Error> {
         Ok(num * next())
     };
 
-    let sum: u32 = slice.chars().map(|c| char_weighting(c)).collect::<Result<Vec<_>, _>>()?.iter().sum();
+    let sum: u32 = slice
+        .chars()
+        .map(char_weighting)
+        .collect::<Result<Vec<_>, _>>()?
+        .iter()
+        .sum();
 
     let expected_check_digit = sum % 10;
 
@@ -179,11 +180,11 @@ mod tests {
                 assert_eq!(passport.passport_number, "L898902C3");
                 assert_eq!(passport.nationality, "UTO");
                 assert_eq!(passport.birth_date.year(), 1974);
-                assert_eq!(passport.birth_date.month(), 08);
+                assert_eq!(passport.birth_date.month(), 8);
                 assert_eq!(passport.birth_date.day(), 12);
                 assert_eq!(passport.gender, Gender::Female);
                 assert_eq!(passport.expiry_date.year(), 2012);
-                assert_eq!(passport.expiry_date.month(), 04);
+                assert_eq!(passport.expiry_date.month(), 4);
                 assert_eq!(passport.expiry_date.day(), 15);
             }
         }

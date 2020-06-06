@@ -13,10 +13,10 @@ pub enum Error {
     InvalidExpiryDate,
     /// MRZ failed check digit verification
     BadCheckDigit,
-    /// Expected digit at a location but got something else
+    /// Expected digit at location but got something else
     ExpectedDigit,
-    /// Encountered a invalid character (not [A-Z], [0-9] or <)
-    InvalidChar
+    /// Encountered an invalid character (not [A-Z], [0-9] or <)
+    InvalidChar,
 }
 
 impl fmt::Display for Error {
@@ -29,7 +29,7 @@ impl fmt::Display for Error {
             InvalidExpiryDate => "invalid date of expiry",
             BadCheckDigit => "provided MRZ failed check digit verification",
             ExpectedDigit => "expected digit at location but found something else",
-            InvalidChar => "encountered a invalid character"
+            InvalidChar => "encountered a invalid character",
         };
         write!(f, "{}", message)
     }
