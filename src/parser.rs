@@ -12,6 +12,8 @@ lazy_static! {
 const DATE_FORMAT: &str = "%y%m%d";
 
 /// Parse a Machine-readable Zone (MRZ) returning the corresponding travel document
+// check digit locations from https://www.icao.int/publications/Documents/9303_p4_cons_en.pdf
+// section 4.2.2
 pub fn parse(data: &str) -> Result<Document, Error> {
     if !VALID_MRZ.is_match(data) {
         return Err(Error::InvalidFormat);
@@ -36,9 +38,13 @@ pub fn parse(data: &str) -> Result<Document, Error> {
         .collect::<Vec<_>>();
 
     let passport_number = String::from(str::from_utf8(&mrz[44..53]).unwrap().replace("<", ""));
+    verify_check_digit(&data[44..53], char_to_num(&data, 53)?)?;
+
     let nationality = String::from(str::from_utf8(&mrz[54..57]).unwrap().replace("<", ""));
     let birth_date = NaiveDate::parse_from_str(str::from_utf8(&mrz[57..63]).unwrap(), DATE_FORMAT)
         .map_err(|_| Error::InvalidBirthDate)?;
+
+    verify_check_digit(&data[57..63], char_to_num(&data, 63)?)?;
 
     let gender = match mrz[64] {
         b'M' => Gender::Male,
@@ -48,6 +54,12 @@ pub fn parse(data: &str) -> Result<Document, Error> {
 
     let expiry_date = NaiveDate::parse_from_str(str::from_utf8(&mrz[65..71]).unwrap(), DATE_FORMAT)
         .map_err(|_| Error::InvalidExpiryDate)?;
+
+    verify_check_digit(&data[65..71], char_to_num(&data, 71)?)?;
+    verify_check_digit(&data[72..86], char_to_num(&data, 86)?)?;
+
+    let comp_check_digit_str = format!("{}{}{}", &data[44..54], &data[57..64], &data[65..87]);
+    verify_check_digit(&comp_check_digit_str, char_to_num(&data, 87)?)?;
 
     return Ok(Document::Passport(Passport {
         country,
@@ -61,21 +73,96 @@ pub fn parse(data: &str) -> Result<Document, Error> {
     }));
 }
 
+fn char_to_num(full_str: &str, ind: usize) -> Result<u32, Error> {
+    let c = full_str.chars().nth(ind).ok_or(Error::InvalidFormat)?;
+
+    if c.is_ascii_digit() {
+        Ok(c.to_digit(10).ok_or(Error::ExpectedDigit)?)
+    } else {
+        Err(Error::ExpectedDigit)
+    }
+}
+
+// check digit calculation from https://www.icao.int/publications/Documents/9303_p3_cons_en.pdf
+// section 4.9
+fn verify_check_digit(slice: &str, check_digit: u32) -> Result<(), Error> {
+    let mut weighting_iter = [7, 3, 1].iter().cycle();
+
+    let mut next = || {
+        weighting_iter.next().expect("cycle iter stopped")
+    };
+
+    let mut char_weighting = |c: char| -> Result<u32, Error> {
+        let num = match c {
+            '0' => 0,
+            '1' => 1,
+            '2' => 2,
+            '3' => 3,
+            '4' => 4,
+            '5' => 5,
+            '6' => 6,
+            '7' => 7,
+            '8' => 8,
+            '9' => 9,
+            'A' => 10,
+            'B' => 11,
+            'C' => 12,
+            'D' => 13,
+            'E' => 14,
+            'F' => 15,
+            'G' => 16,
+            'H' => 17,
+            'I' => 18,
+            'J' => 19,
+            'K' => 20,
+            'L' => 21,
+            'M' => 22,
+            'N' => 23,
+            'O' => 24,
+            'P' => 25,
+            'Q' => 26,
+            'R' => 27,
+            'S' => 28,
+            'T' => 29,
+            'U' => 30,
+            'V' => 31,
+            'W' => 32,
+            'X' => 33,
+            'Y' => 34,
+            'Z' => 35,
+            '<' => 0,
+            _ => return Err(Error::InvalidChar),
+        };
+
+        Ok(num * next())
+    };
+
+    let sum: u32 = slice.chars().map(|c| char_weighting(c)).collect::<Result<Vec<_>, _>>()?.iter().sum();
+
+    let expected_check_digit = sum % 10;
+
+    if check_digit == expected_check_digit {
+        Ok(())
+    } else {
+        Err(Error::BadCheckDigit)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
     fn parse_passport_with_fillers() {
-        let mrz = "P<UT<ERIKSSON<<<<<ANNA<<<MARIA<<<<<<<<<<<<<<\
-                   L898902<<6UT<7408122F1204159ZE184226B<<<<<10";
+        let mrz = "P<CANMARTIN<<SARAH<<<<<<<<<<<<<<<<<<<<<<<<<<\
+                   ZE000509<9CAN8501019F2301147<<<<<<<<<<<<<<08";
         match parse(mrz).unwrap() {
             Document::Passport(passport) => {
-                assert_eq!(passport.country, "UT");
-                assert_eq!(passport.surname, "ERIKSSON");
-                assert_eq!(passport.given_names, vec!["ANNA", "MARIA"]);
-                assert_eq!(passport.passport_number, "L898902");
-                assert_eq!(passport.nationality, "UT");
+                assert_eq!(passport.country, "CAN");
+                assert_eq!(passport.surname, "MARTIN");
+                assert_eq!(passport.given_names, vec!["SARAH"]);
+                assert_eq!(passport.passport_number, "ZE000509");
+                assert_eq!(passport.nationality, "CAN");
             }
         }
     }
