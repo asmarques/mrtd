@@ -7,4 +7,15 @@ mod parser;
 
 pub use document::*;
 pub use error::Error;
-pub use parser::parse;
+
+/// Parse a Machine-readable Zone (MRZ) returning the corresponding travel document.
+/// Performs error checking using the included check digits.
+pub fn parse(data: &str) -> Result<Document, Error> {
+    parser::parse(data, true)
+}
+
+/// Parse a Machine-readable Zone (MRZ) returning the corresponding travel document.
+/// Does not perform error checking using the included check digits.
+pub fn parse_without_checks(data: &str) -> Result<Document, Error> {
+    parser::parse(data, false)
+}
