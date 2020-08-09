@@ -1,5 +1,6 @@
 # mrtd
 
+[![Build Status](https://travis-ci.org/asmarques/mrtd.svg)](https://travis-ci.org/asmarques/mrtd)
 [![Crate](https://img.shields.io/crates/v/mrtd.svg)](https://crates.io/crates/mrtd)
 [![Documentation](https://docs.rs/mrtd/badge.svg)](https://docs.rs/mrtd)
 
