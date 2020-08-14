@@ -24,7 +24,7 @@ pub struct Passport {
     /// Country (ISO 3166-1 code)
     pub country: String,
     /// Surname
-    pub surname: String,
+    pub surnames: Vec<String>,
     /// Given names
     pub given_names: Vec<String>,
     /// Passport number
