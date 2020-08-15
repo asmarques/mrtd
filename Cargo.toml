@@ -1,6 +1,6 @@
 [package]
 name = "mrtd"
-version = "0.3.0"
+version = "0.4.0"
 description = "Parser for machine-readable travel documents (MRTD)"
 authors = ["António Marques <me@antoniomarques.eu>"]
 edition = "2018"
