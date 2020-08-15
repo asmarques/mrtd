@@ -4,6 +4,7 @@ use chrono::prelude::*;
 use lazy_static::lazy_static;
 use regex::Regex;
 use std::str;
+use std::str::FromStr;
 
 lazy_static! {
     static ref VALID_MRZ: Regex = Regex::new(r"^[A-Z0-9<]{88}$").unwrap();
@@ -166,6 +167,14 @@ fn verify_check_digit(slice: &str, check_digit: u32) -> Result<(), Error> {
     }
 }
 
+impl FromStr for Document {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        parse(s, true)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -274,5 +283,14 @@ mod tests {
         parse(mrz, false).unwrap();
         let error = parse(mrz, true).unwrap_err();
         assert_eq!(error, Error::BadCheckDigit);
+    }
+
+    #[test]
+    fn parse_from_str() {
+        let valid_mrz = "P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<\
+                   L898902C36UTO7408122F1204159ZE184226B<<<<<10";
+        valid_mrz.parse::<Document>().unwrap();
+        let invalid_mrz = "<";
+        invalid_mrz.parse::<Document>().unwrap_err();
     }
 }
