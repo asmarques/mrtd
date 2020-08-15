@@ -31,14 +31,20 @@ pub(crate) fn parse(data: &str, check: bool) -> Result<Document, Error> {
 
     names.reverse();
 
-    let surnames = names.pop().ok_or(Error::InvalidFormat)?.split('<')
+    let surnames = names
+        .pop()
+        .ok_or(Error::InvalidFormat)?
+        .split('<')
         .filter(|name| !name.is_empty())
-        .map(|name| String::from(name))
+        .map(String::from)
         .collect::<Vec<_>>();
 
-    let given_names = names.pop().ok_or(Error::InvalidFormat)?.split('<')
+    let given_names = names
+        .pop()
+        .ok_or(Error::InvalidFormat)?
+        .split('<')
         .filter(|name| !name.is_empty())
-        .map(|name| String::from(name))
+        .map(String::from)
         .collect::<Vec<_>>();
 
     let passport_number = str::from_utf8(&mrz[44..53]).unwrap().replace("<", "");
@@ -73,7 +79,7 @@ pub(crate) fn parse(data: &str, check: bool) -> Result<Document, Error> {
 
     Ok(Document::Passport(Passport {
         country,
-        surnames: surnames,
+        surnames,
         given_names,
         passport_number,
         nationality,
