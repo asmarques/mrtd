@@ -24,15 +24,21 @@ pub(crate) fn parse(data: &str, check: bool) -> Result<Document, Error> {
     }
 
     let country = str::from_utf8(&mrz[2..5]).unwrap().replace("<", "");
-    let names = str::from_utf8(&mrz[5..43])
+    let mut names = str::from_utf8(&mrz[5..43])
         .unwrap()
-        .split('<')
+        .split("<<")
         .collect::<Vec<_>>();
-    let surname = String::from(*names.first().unwrap());
-    let given_names = names[2..]
-        .iter()
+
+    names.reverse();
+
+    let surnames = names.pop().ok_or(Error::InvalidFormat)?.split('<')
         .filter(|name| !name.is_empty())
-        .map(|name| String::from(*name))
+        .map(|name| String::from(name))
+        .collect::<Vec<_>>();
+
+    let given_names = names.pop().ok_or(Error::InvalidFormat)?.split('<')
+        .filter(|name| !name.is_empty())
+        .map(|name| String::from(name))
         .collect::<Vec<_>>();
 
     let passport_number = str::from_utf8(&mrz[44..53]).unwrap().replace("<", "");
@@ -67,7 +73,7 @@ pub(crate) fn parse(data: &str, check: bool) -> Result<Document, Error> {
 
     Ok(Document::Passport(Passport {
         country,
-        surname,
+        surnames: surnames,
         given_names,
         passport_number,
         nationality,
@@ -165,7 +171,7 @@ mod tests {
         match parse(mrz, true).unwrap() {
             Document::Passport(passport) => {
                 assert_eq!(passport.country, "CAN");
-                assert_eq!(passport.surname, "MARTIN");
+                assert_eq!(passport.surnames, vec!["MARTIN"]);
                 assert_eq!(passport.given_names, vec!["SARAH"]);
                 assert_eq!(passport.passport_number, "ZE000509");
                 assert_eq!(passport.nationality, "CAN");
@@ -180,7 +186,29 @@ mod tests {
         match parse(mrz, true).unwrap() {
             Document::Passport(passport) => {
                 assert_eq!(passport.country, "UTO");
-                assert_eq!(passport.surname, "ERIKSSON");
+                assert_eq!(passport.surnames, vec!["ERIKSSON"]);
+                assert_eq!(passport.given_names, vec!["ANNA", "MARIA"]);
+                assert_eq!(passport.passport_number, "L898902C3");
+                assert_eq!(passport.nationality, "UTO");
+                assert_eq!(passport.birth_date.year(), 1974);
+                assert_eq!(passport.birth_date.month(), 8);
+                assert_eq!(passport.birth_date.day(), 12);
+                assert_eq!(passport.gender, Gender::Female);
+                assert_eq!(passport.expiry_date.year(), 2012);
+                assert_eq!(passport.expiry_date.month(), 4);
+                assert_eq!(passport.expiry_date.day(), 15);
+            }
+        }
+    }
+
+    #[test]
+    fn parse_passport_multiple_names() {
+        let mrz = "P<UTOERIKSSON<JOHNSON<<ANNA<MARIA<<<<<<<<<<<\
+                   L898902C36UTO7408122F1204159ZE184226B<<<<<10";
+        match parse(mrz, true).unwrap() {
+            Document::Passport(passport) => {
+                assert_eq!(passport.country, "UTO");
+                assert_eq!(passport.surnames, vec!["ERIKSSON", "JOHNSON"]);
                 assert_eq!(passport.given_names, vec!["ANNA", "MARIA"]);
                 assert_eq!(passport.passport_number, "L898902C3");
                 assert_eq!(passport.nationality, "UTO");
