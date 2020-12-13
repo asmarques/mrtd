@@ -1,8 +1,8 @@
 # mrtd
 
-[![Build Status](https://travis-ci.org/asmarques/mrtd.svg)](https://travis-ci.org/asmarques/mrtd)
 [![Crate](https://img.shields.io/crates/v/mrtd.svg)](https://crates.io/crates/mrtd)
 [![Documentation](https://docs.rs/mrtd/badge.svg)](https://docs.rs/mrtd)
+![Build Status](https://github.com/asmarques/mrtd/workflows/Continuous%20integration/badge.svg)
 
 A Rust parser for the machine-readable zone (MRZ) of machine-readable travel documents (MRTD) as defined by ICAO Document 9303.
 
