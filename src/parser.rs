@@ -24,7 +24,7 @@ pub(crate) fn parse(data: &str, check: bool) -> Result<Document, Error> {
         return Err(Error::InvalidDocumentType);
     }
 
-    let country = str::from_utf8(&mrz[2..5]).unwrap().replace("<", "");
+    let country = str::from_utf8(&mrz[2..5]).unwrap().replace('<', "");
     let mut names = str::from_utf8(&mrz[5..43])
         .unwrap()
         .split("<<")
@@ -48,17 +48,17 @@ pub(crate) fn parse(data: &str, check: bool) -> Result<Document, Error> {
         .map(String::from)
         .collect::<Vec<_>>();
 
-    let passport_number = str::from_utf8(&mrz[44..53]).unwrap().replace("<", "");
+    let passport_number = str::from_utf8(&mrz[44..53]).unwrap().replace('<', "");
     if check {
-        verify_check_digit(&data[44..53], char_to_num(&data, 53)?)?;
+        verify_check_digit(&data[44..53], char_to_num(data, 53)?)?;
     }
 
-    let nationality = str::from_utf8(&mrz[54..57]).unwrap().replace("<", "");
+    let nationality = str::from_utf8(&mrz[54..57]).unwrap().replace('<', "");
     let birth_date = NaiveDate::parse_from_str(str::from_utf8(&mrz[57..63]).unwrap(), DATE_FORMAT)
         .map_err(|_| Error::InvalidBirthDate)?;
 
     if check {
-        verify_check_digit(&data[57..63], char_to_num(&data, 63)?)?;
+        verify_check_digit(&data[57..63], char_to_num(data, 63)?)?;
     }
 
     let gender = match mrz[64] {
@@ -71,11 +71,11 @@ pub(crate) fn parse(data: &str, check: bool) -> Result<Document, Error> {
         .map_err(|_| Error::InvalidExpiryDate)?;
 
     if check {
-        verify_check_digit(&data[65..71], char_to_num(&data, 71)?)?;
-        verify_check_digit(&data[72..86], char_to_num(&data, 86)?)?;
+        verify_check_digit(&data[65..71], char_to_num(data, 71)?)?;
+        verify_check_digit(&data[72..86], char_to_num(data, 86)?)?;
 
         let comp_check_digit_str = format!("{}{}{}", &data[44..54], &data[57..64], &data[65..87]);
-        verify_check_digit(&comp_check_digit_str, char_to_num(&data, 87)?)?;
+        verify_check_digit(&comp_check_digit_str, char_to_num(data, 87)?)?;
     }
 
     Ok(Document::Passport(Passport {
