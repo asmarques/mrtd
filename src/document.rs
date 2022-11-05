@@ -1,7 +1,7 @@
 use chrono::NaiveDate;
 
 /// Travel document
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Document {
     /// Passport
     Passport(Passport),
@@ -19,7 +19,7 @@ pub enum Gender {
 }
 
 /// Passport
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Passport {
     /// Country (ISO 3166-1 code)
     pub country: String,
