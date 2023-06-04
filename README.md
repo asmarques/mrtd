@@ -17,17 +17,19 @@ Supported travel documents:
 use mrtd::{parse, Document};
 
 fn main() {
-    let mrz = "P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<\
-            L898902C36UTO7408122X1204159ZE184226B<<<<<10";
-    let Document::Passport(passport) = parse(mrz).unwrap();
-    assert_eq!(passport.passport_number, "L898902C3");
-    println!("{:?}", passport);
+    let passport_mrz = "P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<\
+        L898902C36UTO7408122X1204159ZE184226B<<<<<10";
+    if let Document::Passport(passport) = parse(passport_mrz).unwrap() {
+        assert_eq!(passport.passport_number, "L898902C3");
+        println!("{:?}", passport);
+    }
 
     let id_card_mrz = "C<ITACA00000AA4<<<<<<<<<<<<<<<\
         6412308F2212304ITA<<<<<<<<<<<0\
         ROSSI<<BIANCA<<<<<<<<<<<<<<<<<";
-    let Document::IdentityCard(identity_card) = parse(id_card_mrz).unwrap();
-    assert_eq!(identity_card.document_number, "CA00000AA");
-    println!("{:?}", identity_card);
+    if let Document::IdentityCard(identity_card) = parse(id_card_mrz).unwrap() {
+        assert_eq!(identity_card.document_number, "CA00000AA");
+        println!("{:?}", identity_card);
+    };
 }
 ```
