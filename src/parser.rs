@@ -295,7 +295,7 @@ mod tests {
                 assert_eq!(passport.passport_number, "ZE000509");
                 assert_eq!(passport.nationality, "CAN");
             }
-            _ => {}
+            _ => panic!("unexpected document"),
         }
     }
 
@@ -318,7 +318,7 @@ mod tests {
                 assert_eq!(passport.expiry_date.month(), 4);
                 assert_eq!(passport.expiry_date.day(), 15);
             }
-            _ => {}
+            _ => panic!("unexpected document"),
         }
     }
 
@@ -341,7 +341,7 @@ mod tests {
                 assert_eq!(passport.expiry_date.month(), 4);
                 assert_eq!(passport.expiry_date.day(), 15);
             }
-            _ => {}
+            _ => panic!("unexpected document"),
         }
     }
 
@@ -422,7 +422,7 @@ mod tests {
                 assert_eq!(identity_card.expiry_date.month(), 12);
                 assert_eq!(identity_card.expiry_date.day(), 30);
             }
-            _ => {}
+            _ => panic!("unexpected document"),
         }
     }
 
@@ -447,7 +447,7 @@ mod tests {
                 assert_eq!(identity_card.expiry_date.month(), 8);
                 assert_eq!(identity_card.expiry_date.day(), 2);
             }
-            _ => {}
+            _ => panic!("unexpected document"),
         }
     }
 
