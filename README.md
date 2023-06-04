@@ -9,6 +9,7 @@ A Rust parser for the machine-readable zone (MRZ) of machine-readable travel doc
 Supported travel documents:
 
 - Passport
+- Identity Card
 
 ## Example
 
@@ -21,5 +22,12 @@ fn main() {
     let Document::Passport(passport) = parse(mrz).unwrap();
     assert_eq!(passport.passport_number, "L898902C3");
     println!("{:?}", passport);
+
+    let id_card_mrz = "C<ITACA00000AA4<<<<<<<<<<<<<<<\
+        6412308F2212304ITA<<<<<<<<<<<0\
+        ROSSI<<BIANCA<<<<<<<<<<<<<<<<<";
+    let Document::IdentityCard(identity_card) = parse(id_card_mrz).unwrap();
+    assert_eq!(identity_card.document_number, "CA00000AA");
+    println!("{:?}", identity_card);
 }
 ```

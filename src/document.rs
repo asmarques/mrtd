@@ -5,6 +5,7 @@ use chrono::NaiveDate;
 pub enum Document {
     /// Passport
     Passport(Passport),
+    IdentityCard(IdentityCard),
 }
 
 /// Gender
@@ -29,6 +30,27 @@ pub struct Passport {
     pub given_names: Vec<String>,
     /// Passport number
     pub passport_number: String,
+    /// Nationality (ISO 3166-1 code)
+    pub nationality: String,
+    /// Date of birth
+    pub birth_date: NaiveDate,
+    /// Gender
+    pub gender: Gender,
+    /// Date of expiry
+    pub expiry_date: NaiveDate,
+}
+
+/// Identity Card
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub struct IdentityCard {
+    /// Country (ISO 3166-1 code)
+    pub country: String,
+    /// Surname
+    pub surnames: Vec<String>,
+    /// Given names
+    pub given_names: Vec<String>,
+    /// Passport number
+    pub document_number: String,
     /// Nationality (ISO 3166-1 code)
     pub nationality: String,
     /// Date of birth
