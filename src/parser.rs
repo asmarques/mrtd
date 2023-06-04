@@ -17,7 +17,7 @@ const DATE_FORMAT: &str = "%y%m%d";
 // and
 // Field specification from https://www.icao.int/publications/Documents/9303_p5_cons_en.pdf
 pub(crate) fn parse(data: &str, check: bool) -> Result<Document, Error> {
-    return if VALID_PASSPORT_MRZ.is_match(data) {
+    if VALID_PASSPORT_MRZ.is_match(data) {
         parse_passport(data, check)
     } else if VALID_IDENTITY_CARD_MRZ.is_match(data) {
         parse_identity_card(data, check)
@@ -106,7 +106,7 @@ fn verify_check_digit(slice: &str, check_digit: u32) -> Result<(), Error> {
 fn parse_passport(data: &str, check: bool) -> Result<Document, Error> {
     let mrz = data.as_bytes();
 
-    if mrz[0] != b'P'{
+    if mrz[0] != b'P' {
         return Err(Error::InvalidDocumentType);
     }
 
@@ -140,8 +140,9 @@ fn parse_passport(data: &str, check: bool) -> Result<Document, Error> {
     }
 
     let nationality = str::from_utf8(&mrz[54..57]).unwrap().replace('<', "");
-    let mut birth_date = NaiveDate::parse_from_str(str::from_utf8(&mrz[57..63]).unwrap(), DATE_FORMAT)
-        .map_err(|_| Error::InvalidBirthDate)?;
+    let mut birth_date =
+        NaiveDate::parse_from_str(str::from_utf8(&mrz[57..63]).unwrap(), DATE_FORMAT)
+            .map_err(|_| Error::InvalidBirthDate)?;
 
     let birth_year = birth_date.year();
     let current_year = Utc::now().year();
@@ -186,7 +187,7 @@ fn parse_passport(data: &str, check: bool) -> Result<Document, Error> {
 fn parse_identity_card(data: &str, check: bool) -> Result<Document, Error> {
     let mrz = data.as_bytes();
 
-    if (mrz[0] != b'I') && (mrz[0] != b'A') && (mrz[0] != b'C'){
+    if (mrz[0] != b'I') && (mrz[0] != b'A') && (mrz[0] != b'C') {
         return Err(Error::InvalidDocumentType);
     }
 
@@ -215,14 +216,15 @@ fn parse_identity_card(data: &str, check: bool) -> Result<Document, Error> {
         .map(String::from)
         .collect::<Vec<_>>();
 
-    let document_number = str::from_utf8(&mrz[5..14]).unwrap().replace("<", "");
+    let document_number = str::from_utf8(&mrz[5..14]).unwrap().replace('<', "");
     if check {
         verify_check_digit(&data[5..14], char_to_num(data, 14)?)?;
     }
 
     let nationality = str::from_utf8(&mrz[2..5]).unwrap().replace('<', "");
-    let mut birth_date = NaiveDate::parse_from_str(str::from_utf8(&mrz[30..36]).unwrap(), DATE_FORMAT)
-        .map_err(|_| Error::InvalidBirthDate)?;
+    let mut birth_date =
+        NaiveDate::parse_from_str(str::from_utf8(&mrz[30..36]).unwrap(), DATE_FORMAT)
+            .map_err(|_| Error::InvalidBirthDate)?;
 
     let birth_year = birth_date.year();
     let current_year = Utc::now().year();
@@ -247,7 +249,13 @@ fn parse_identity_card(data: &str, check: bool) -> Result<Document, Error> {
     if check {
         verify_check_digit(&data[38..44], char_to_num(data, 44)?)?;
 
-        let comp_check_digit_str = format!("{}{}{}{}", &data[5..30], &data[30..37], &data[38..45], &data[48..59]);
+        let comp_check_digit_str = format!(
+            "{}{}{}{}",
+            &data[5..30],
+            &data[30..37],
+            &data[38..45],
+            &data[48..59]
+        );
         verify_check_digit(&comp_check_digit_str, char_to_num(data, 59)?)?;
     }
 
@@ -395,7 +403,6 @@ mod tests {
 
     #[test]
     fn parse_identity_card() {
-
         let mrz = "C<ITACA00000AA4<<<<<<<<<<<<<<<\
         6412308F2212304ITA<<<<<<<<<<<0\
         ROSSI<<BIANCA<<<<<<<<<<<<<<<<<";
@@ -497,5 +504,4 @@ mod tests {
         let error = parse(mrz, true).unwrap_err();
         assert_eq!(error, Error::BadCheckDigit);
     }
-
 }

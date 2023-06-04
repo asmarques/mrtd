@@ -5,7 +5,7 @@ use chrono::NaiveDate;
 pub enum Document {
     /// Passport
     Passport(Passport),
-    IdentityCard(IdentityCard)
+    IdentityCard(IdentityCard),
 }
 
 /// Gender
