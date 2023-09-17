@@ -166,7 +166,10 @@ fn parse_passport(data: &str, check: bool) -> Result<Document, Error> {
 
     if check {
         verify_check_digit(&data[65..71], char_to_num(data, 71)?)?;
-        verify_check_digit(&data[72..86], char_to_num(data, 86)?)?;
+
+        if !data[72..87].chars().all(|c| c == '<') {
+            verify_check_digit(&data[72..86], char_to_num(data, 86)?)?;
+        }
 
         let comp_check_digit_str = format!("{}{}{}", &data[44..54], &data[57..64], &data[65..87]);
         verify_check_digit(&comp_check_digit_str, char_to_num(data, 87)?)?;
@@ -286,7 +289,7 @@ mod tests {
     #[test]
     fn parse_passport_with_fillers() {
         let mrz = "P<CANMARTIN<<SARAH<<<<<<<<<<<<<<<<<<<<<<<<<<\
-                   ZE000509<9CAN8501019F2301147<<<<<<<<<<<<<<08";
+                   ZE000509<9CAN8501019F2301147<<<<<<<<<<<<<<<8";
         match parse(mrz, true).unwrap() {
             Document::Passport(passport) => {
                 assert_eq!(passport.country, "CAN");
