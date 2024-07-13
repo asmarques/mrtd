@@ -2,7 +2,10 @@
 name = "mrtd"
 version = "0.5.1"
 description = "Parser for machine-readable travel documents (MRTD)"
-authors = ["António Marques <me@antoniomarques.eu>", "Metin Binbir <binbir.metin@hotmail.com>"]
+authors = [
+  "António Marques <me@antoniomarques.eu>",
+  "Metin Binbir <binbir.metin@hotmail.com>",
+]
 edition = "2018"
 license = "MIT/Apache-2.0"
 repository = "https://github.com/asmarques/mrtd"
@@ -10,7 +13,11 @@ readme = "README.md"
 keywords = ["mrtd", "icao", "mrz", "passport", "travel"]
 categories = ["parser-implementations", "encoding"]
 
+[features]
+serde = ["dep:serde", "chrono/serde"]
+
 [dependencies]
 chrono = "0.4"
 regex = "1"
 lazy_static = "1.1"
+serde = { version = "1", optional = true, features = ["derive"] }

@@ -1,7 +1,14 @@
 use chrono::NaiveDate;
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
 
 /// Travel document
 #[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Serialize, Deserialize),
+    serde(rename_all = "snake_case", tag = "type")
+)]
 pub enum Document {
     /// Passport
     Passport(Passport),
@@ -11,6 +18,11 @@ pub enum Document {
 
 /// Gender
 #[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Serialize, Deserialize),
+    serde(rename_all = "snake_case")
+)]
 pub enum Gender {
     /// Male
     Male,
@@ -22,6 +34,7 @@ pub enum Gender {
 
 /// Passport
 #[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct Passport {
     /// Country (ISO 3166-1 code)
     pub country: String,
@@ -43,6 +56,7 @@ pub struct Passport {
 
 /// Identity Card
 #[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct IdentityCard {
     /// Country (ISO 3166-1 code)
     pub country: String,
