@@ -52,6 +52,8 @@ pub struct Passport {
     pub gender: Gender,
     /// Date of expiry
     pub expiry_date: NaiveDate,
+    /// Optional data in line 2 positions 29-42 (Doc 9303-4 §4.2.2.2).
+    pub optional_data: Option<String>,
 }
 
 /// Identity Card
@@ -74,4 +76,8 @@ pub struct IdentityCard {
     pub gender: Gender,
     /// Date of expiry
     pub expiry_date: NaiveDate,
+    /// Optional data in line 1 positions 16–30 (Doc 9303-5 §4.2.2.1).
+    pub optional_data_1: Option<String>,
+    /// Optional data in line 2 positions 19–29 (Doc 9303-5 §4.2.2.2).
+    pub optional_data_2: Option<String>,
 }
