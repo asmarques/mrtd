@@ -194,7 +194,7 @@ fn parse_passport(data: &str, check: bool) -> Result<Document, Error> {
         birth_date,
         gender,
         expiry_date,
-        optional_data
+        optional_data,
     }))
 }
 
@@ -371,7 +371,7 @@ mod tests {
     fn parse_passport_with_optional_data() {
         let mrz = "P<GBRBLUNDBY<<MICHAEL<<<<<<<<<<<<<<<<<<<<<<<\
             4133285200GBR4904243M1601013<A<<B<<<C<<<<<52";
-        match parse(mrz,true).unwrap() {
+        match parse(mrz, true).unwrap() {
             Document::Passport(passport) => {
                 assert_eq!(passport.country, "GBR");
                 assert_eq!(passport.surnames, vec!["BLUNDBY"]);
@@ -506,19 +506,25 @@ mod tests {
         let mrz = "I<BRAPWVFR5GHV7<<A<<<B<<<C<<<<\
             8610164F3010242BRAOPTIONAL2<<5\
             KYBF<<QZCU<<<<<<<<<<<<<<<<<<<<";
-        match parse(mrz,true).unwrap() {
+        match parse(mrz, true).unwrap() {
             Document::IdentityCard(identity_card) => {
                 assert_eq!(identity_card.country, "BRA");
                 assert_eq!(identity_card.surnames, vec!["KYBF"]);
                 assert_eq!(identity_card.given_names, vec!["QZCU"]);
                 assert_eq!(identity_card.document_number, "PWVFR5GHV");
                 assert_eq!(identity_card.nationality, "BRA");
-                assert_eq!(identity_card.birth_date,NaiveDate::parse_from_str("861016",DATE_FORMAT).unwrap());
+                assert_eq!(
+                    identity_card.birth_date,
+                    NaiveDate::parse_from_str("861016", DATE_FORMAT).unwrap()
+                );
                 assert_eq!(identity_card.gender, Gender::Female);
-                assert_eq!(identity_card.expiry_date, NaiveDate::parse_from_str("301024",DATE_FORMAT).unwrap());
+                assert_eq!(
+                    identity_card.expiry_date,
+                    NaiveDate::parse_from_str("301024", DATE_FORMAT).unwrap()
+                );
                 assert_eq!(identity_card.optional_data_1, Some("A<<<B<<<C".into()));
                 assert_eq!(identity_card.optional_data_2, Some("OPTIONAL2".into()));
-            },
+            }
             _ => panic!("unexpected document"),
         }
     }
