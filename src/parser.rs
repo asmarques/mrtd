@@ -103,6 +103,14 @@ fn verify_check_digit(slice: &str, check_digit: u32) -> Result<(), Error> {
     }
 }
 
+fn parse_optional_data(data: &str) -> Option<String> {
+    let str = data.trim_matches('<');
+    if str.is_empty() {
+        return None;
+    }
+    Some(str.into())
+}
+
 fn parse_passport(data: &str, check: bool) -> Result<Document, Error> {
     let mrz = data.as_bytes();
 
@@ -175,6 +183,8 @@ fn parse_passport(data: &str, check: bool) -> Result<Document, Error> {
         verify_check_digit(&comp_check_digit_str, char_to_num(data, 87)?)?;
     }
 
+    let optional_data = parse_optional_data(&data[72..86]);
+
     Ok(Document::Passport(Passport {
         country,
         surnames,
@@ -184,6 +194,7 @@ fn parse_passport(data: &str, check: bool) -> Result<Document, Error> {
         birth_date,
         gender,
         expiry_date,
+        optional_data
     }))
 }
 
@@ -262,6 +273,9 @@ fn parse_identity_card(data: &str, check: bool) -> Result<Document, Error> {
         verify_check_digit(&comp_check_digit_str, char_to_num(data, 59)?)?;
     }
 
+    let optional_data_1 = parse_optional_data(&data[15..30]);
+    let optional_data_2 = parse_optional_data(&data[48..59]);
+
     Ok(Document::IdentityCard(IdentityCard {
         country,
         surnames,
@@ -271,6 +285,8 @@ fn parse_identity_card(data: &str, check: bool) -> Result<Document, Error> {
         birth_date,
         gender,
         expiry_date,
+        optional_data_1,
+        optional_data_2,
     }))
 }
 
@@ -297,6 +313,7 @@ mod tests {
                 assert_eq!(passport.given_names, vec!["SARAH"]);
                 assert_eq!(passport.passport_number, "ZE000509");
                 assert_eq!(passport.nationality, "CAN");
+                assert_eq!(passport.optional_data, None);
             }
             _ => panic!("unexpected document"),
         }
@@ -320,6 +337,7 @@ mod tests {
                 assert_eq!(passport.expiry_date.year(), 2012);
                 assert_eq!(passport.expiry_date.month(), 4);
                 assert_eq!(passport.expiry_date.day(), 15);
+                assert_eq!(passport.optional_data, Some("ZE184226B".into()));
             }
             _ => panic!("unexpected document"),
         }
@@ -343,6 +361,31 @@ mod tests {
                 assert_eq!(passport.expiry_date.year(), 2012);
                 assert_eq!(passport.expiry_date.month(), 4);
                 assert_eq!(passport.expiry_date.day(), 15);
+                assert_eq!(passport.optional_data, Some("ZE184226B".into()));
+            }
+            _ => panic!("unexpected document"),
+        }
+    }
+
+    #[test]
+    fn parse_passport_with_optional_data() {
+        let mrz = "P<GBRBLUNDBY<<MICHAEL<<<<<<<<<<<<<<<<<<<<<<<\
+            4133285200GBR4904243M1601013<A<<B<<<C<<<<<52";
+        match parse(mrz,true).unwrap() {
+            Document::Passport(passport) => {
+                assert_eq!(passport.country, "GBR");
+                assert_eq!(passport.surnames, vec!["BLUNDBY"]);
+                assert_eq!(passport.given_names, vec!["MICHAEL"]);
+                assert_eq!(passport.passport_number, "413328520");
+                assert_eq!(passport.nationality, "GBR");
+                assert_eq!(passport.birth_date.year(), 1949);
+                assert_eq!(passport.birth_date.month(), 4);
+                assert_eq!(passport.birth_date.day(), 24);
+                assert_eq!(passport.gender, Gender::Male);
+                assert_eq!(passport.expiry_date.year(), 2016);
+                assert_eq!(passport.expiry_date.month(), 1);
+                assert_eq!(passport.expiry_date.day(), 1);
+                assert_eq!(passport.optional_data, Some("A<<B<<<C".into()));
             }
             _ => panic!("unexpected document"),
         }
@@ -424,6 +467,8 @@ mod tests {
                 assert_eq!(identity_card.expiry_date.year(), 2022);
                 assert_eq!(identity_card.expiry_date.month(), 12);
                 assert_eq!(identity_card.expiry_date.day(), 30);
+                assert_eq!(identity_card.optional_data_1, None);
+                assert_eq!(identity_card.optional_data_2, None);
             }
             _ => panic!("unexpected document"),
         }
@@ -449,7 +494,31 @@ mod tests {
                 assert_eq!(identity_card.expiry_date.year(), 2031);
                 assert_eq!(identity_card.expiry_date.month(), 8);
                 assert_eq!(identity_card.expiry_date.day(), 2);
+                assert_eq!(identity_card.optional_data_1, None);
+                assert_eq!(identity_card.optional_data_2, None);
             }
+            _ => panic!("unexpected document"),
+        }
+    }
+
+    #[test]
+    fn parse_identity_card_with_optional_data() {
+        let mrz = "I<BRAPWVFR5GHV7<<A<<<B<<<C<<<<\
+            8610164F3010242BRAOPTIONAL2<<5\
+            KYBF<<QZCU<<<<<<<<<<<<<<<<<<<<";
+        match parse(mrz,true).unwrap() {
+            Document::IdentityCard(identity_card) => {
+                assert_eq!(identity_card.country, "BRA");
+                assert_eq!(identity_card.surnames, vec!["KYBF"]);
+                assert_eq!(identity_card.given_names, vec!["QZCU"]);
+                assert_eq!(identity_card.document_number, "PWVFR5GHV");
+                assert_eq!(identity_card.nationality, "BRA");
+                assert_eq!(identity_card.birth_date,NaiveDate::parse_from_str("861016",DATE_FORMAT).unwrap());
+                assert_eq!(identity_card.gender, Gender::Female);
+                assert_eq!(identity_card.expiry_date, NaiveDate::parse_from_str("301024",DATE_FORMAT).unwrap());
+                assert_eq!(identity_card.optional_data_1, Some("A<<<B<<<C".into()));
+                assert_eq!(identity_card.optional_data_2, Some("OPTIONAL2".into()));
+            },
             _ => panic!("unexpected document"),
         }
     }
@@ -473,7 +542,6 @@ mod tests {
         let mrz = "Z<NLDSPECI20212<<<<<<<<<<<<<<<\
         6503101F3108022NLD<<<<<<<<<<<8\
         DE<BRUIJN<<WILLEKE<LISELOTTE<<";
-
         let error = parse(mrz, true).unwrap_err();
         assert_eq!(error, Error::InvalidDocumentType);
     }
